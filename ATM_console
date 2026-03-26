@@ -1,0 +1,124 @@
+import java.util.*;
+
+class Account {
+    int accNo;
+    String name;
+    String dob;
+    int balance = 1000;
+
+    ArrayList<String> history = new ArrayList<>();
+
+    Account(int accNo, String name, String dob) {
+        this.accNo = accNo;
+        this.name = name;
+        this.dob = dob;
+    }
+}
+
+public class ATMSystem {
+
+    static Scanner sc = new Scanner(System.in);
+
+    static ArrayList<Account> users = new ArrayList<>();
+
+    public static void main(String[] args) {
+
+        while (true) {
+            System.out.println("\n1.Create Account  2.Login  3.Exit");
+            int ch = Integer.parseInt(sc.nextLine());
+
+            if (ch == 1) createAccount();
+            else if (ch == 2) login();
+            else break;
+        }
+    }
+
+    // CREATE ACCOUNT
+    static void createAccount() {
+        System.out.print("Account Number: ");
+        int accNo = Integer.parseInt(sc.nextLine());
+
+        System.out.print("Name: ");
+        String name = sc.nextLine();
+
+        System.out.print("DOB (DD/MM/YYYY): ");
+        String dob = sc.nextLine();
+
+        users.add(new Account(accNo, name, dob));
+
+        System.out.println("Account created successfully!");
+    }
+
+    // LOGIN
+    static void login() {
+        System.out.print("Enter Account No: ");
+        int accNo = Integer.parseInt(sc.nextLine());
+
+        System.out.print("Enter DOB: ");
+        String dob = sc.nextLine();
+
+        for (Account a : users) {
+            if (a.accNo == accNo && a.dob.equals(dob)) {
+                userMenu(a);
+                return;
+            }
+        }
+
+        System.out.println("Invalid details");
+    }
+
+    // USER MENU
+    static void userMenu(Account a) {
+        while (true) {
+            System.out.println("\n---ATM MENU---");
+            System.out.println("1.Check Balance");
+            System.out.println("2.Deposit");
+            System.out.println("3.Withdraw");
+            System.out.println("4.History");
+            System.out.println("5.Logout");
+
+            int ch = Integer.parseInt(sc.nextLine());
+
+            if (ch == 1) checkBalance(a);
+            else if (ch == 2) deposit(a);
+            else if (ch == 3) withdraw(a);
+            else if (ch == 4) showHistory(a);
+            else break;
+        }
+    }
+
+    static void checkBalance(Account a) {
+        System.out.println("Balance: " + a.balance);
+    }
+
+    static void deposit(Account a) {
+        System.out.print("Enter amount: ");
+        int amt = Integer.parseInt(sc.nextLine());
+
+        a.balance += amt;
+        a.history.add("Deposited: " + amt);
+
+        System.out.println("Amount deposited");
+    }
+
+    static void withdraw(Account a) {
+        System.out.print("Enter amount: ");
+        int amt = Integer.parseInt(sc.nextLine());
+
+        if (amt > a.balance) {
+            System.out.println("Insufficient balance");
+            return;
+        }
+
+        a.balance -= amt;
+        a.history.add("Withdrawn: " + amt);
+
+        System.out.println("Amount withdrawn");
+    }
+
+    static void showHistory(Account a) {
+        for (String h : a.history) {
+            System.out.println(h);
+        }
+    }
+}
