@@ -1,0 +1,252 @@
+import java.util.*;
+
+class Product {
+    int id;
+    String name;
+    int price;
+    int qty;
+    int sold = 0;
+
+    Product(int id, String name, int price, int qty) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.qty = qty;
+    }
+}
+
+class Customer {
+    String email;
+    String password;
+    int credit = 1000;
+    int points = 0;
+
+    ArrayList<Product> cart = new ArrayList<>();
+    ArrayList<String> history = new ArrayList<>();
+
+    Customer(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+}
+
+public class SuperMarketSystem {
+
+    static Scanner sc = new Scanner(System.in);
+
+    static ArrayList<Product> products = new ArrayList<>();
+    static ArrayList<Customer> customers = new ArrayList<>();
+
+    static String adminEmail = "admin";
+    static String adminPass = "123";
+
+    static int billNo = 1;
+
+    public static void main(String[] args) {
+
+        while (true) {
+            System.out.println("\n1.Login  2.Exit");
+            int ch = Integer.parseInt(sc.nextLine());
+
+            if (ch == 1) login();
+            else break;
+        }
+    }
+
+    // LOGIN
+    static void login() {
+        System.out.print("Email: ");
+        String email = sc.nextLine();
+
+        System.out.print("Password: ");
+        String pass = sc.nextLine();
+
+        if (email.equals(adminEmail) && pass.equals(adminPass)) {
+            adminMenu();
+        } else {
+            for (Customer c : customers) {
+                if (c.email.equals(email) && c.password.equals(pass)) {
+                    customerMenu(c);
+                    return;
+                }
+            }
+            System.out.println("Invalid login");
+        }
+    }
+
+    // ADMIN MENU
+    static void adminMenu() {
+        while (true) {
+            System.out.println("\n---Admin Menu---");
+            System.out.println("1.Add Product");
+            System.out.println("2.View Products");
+            System.out.println("3.Delete Product");
+            System.out.println("4.Add Customer");
+            System.out.println("5.Reports");
+            System.out.println("6.Logout");
+
+            int ch = Integer.parseInt(sc.nextLine());
+
+            if (ch == 1) addProduct();
+            else if (ch == 2) viewProducts();
+            else if (ch == 3) deleteProduct();
+            else if (ch == 4) addCustomer();
+            else if (ch == 5) reports();
+            else break;
+        }
+    }
+
+    static void addProduct() {
+        System.out.print("ID: ");
+        int id = Integer.parseInt(sc.nextLine());
+
+        System.out.print("Name: ");
+        String name = sc.nextLine();
+
+        System.out.print("Price: ");
+        int price = Integer.parseInt(sc.nextLine());
+
+        System.out.print("Qty: ");
+        int qty = Integer.parseInt(sc.nextLine());
+
+        products.add(new Product(id, name, price, qty));
+        System.out.println("Product added");
+    }
+
+    static void viewProducts() {
+        for (Product p : products) {
+            System.out.println(p.id + " | " + p.name + " | " + p.price + " | Qty:" + p.qty);
+        }
+    }
+
+    static void deleteProduct() {
+        System.out.print("Enter ID: ");
+        int id = Integer.parseInt(sc.nextLine());
+
+        for (int i = 0; i < products.size(); i++) {
+            if (products.get(i).id == id) {
+                products.remove(i);
+                System.out.println("Deleted");
+                return;
+            }
+        }
+        System.out.println("Not found");
+    }
+
+    static void addCustomer() {
+        System.out.print("Email: ");
+        String e = sc.nextLine();
+
+        System.out.print("Password: ");
+        String p = sc.nextLine();
+
+        customers.add(new Customer(e, p));
+        System.out.println("Customer added");
+    }
+
+    // CUSTOMER MENU
+    static void customerMenu(Customer c) {
+        while (true) {
+            System.out.println("\n---Customer Menu---");
+            System.out.println("1.View Products");
+            System.out.println("2.Add to Cart");
+            System.out.println("3.View Cart");
+            System.out.println("4.Payment");
+            System.out.println("5.History");
+            System.out.println("6.Logout");
+
+            int ch = Integer.parseInt(sc.nextLine());
+
+            if (ch == 1) viewProducts();
+            else if (ch == 2) addToCart(c);
+            else if (ch == 3) viewCart(c);
+            else if (ch == 4) payment(c);
+            else if (ch == 5) viewHistory(c);
+            else break;
+        }
+    }
+
+    static void addToCart(Customer c) {
+        System.out.print("Enter Product ID: ");
+        int id = Integer.parseInt(sc.nextLine());
+
+        System.out.print("Qty: ");
+        int q = Integer.parseInt(sc.nextLine());
+
+        for (Product p : products) {
+            if (p.id == id && p.qty >= q) {
+                c.cart.add(p);
+                System.out.println("Added to cart");
+                return;
+            }
+        }
+        System.out.println("Product not available");
+    }
+
+    static void viewCart(Customer c) {
+        for (Product p : c.cart) {
+            System.out.println(p.name + " - " + p.price);
+        }
+    }
+
+    static void payment(Customer c) {
+
+        int total = 0;
+
+        for (Product p : c.cart) {
+            total += p.price;
+        }
+
+        if (total > c.credit) {
+            System.out.println("Not enough credit");
+            return;
+        }
+
+        // reward logic
+        if (total >= 5000) {
+            c.credit += 100;
+            System.out.println("Cashback 100 added");
+        } else {
+            c.points += total / 100;
+        }
+
+        if (c.points >= 50) {
+            c.credit += 100;
+            c.points = 0;
+            System.out.println("100 discount applied");
+        }
+
+        c.credit -= total;
+
+        c.history.add("Bill " + billNo + " Amount: " + total);
+        billNo++;
+
+        c.cart.clear();
+
+        System.out.println("Payment done. Remaining credit: " + c.credit);
+    }
+
+    static void viewHistory(Customer c) {
+        for (String h : c.history) {
+            System.out.println(h);
+        }
+    }
+
+    // REPORTS
+    static void reports() {
+
+        System.out.println("Low stock products:");
+        for (Product p : products) {
+            if (p.qty < 2) {
+                System.out.println(p.name);
+            }
+        }
+
+        System.out.println("Products not sold:");
+        for (Product p : products) {
+            if (p.sold == 0) {
+                System.out.println(p.name);
+            }
+        }
+    }
+}
