@@ -1,0 +1,244 @@
+import java.util.*;
+
+class Book {
+    String name;
+    String isbn;
+    int qty;
+    int price;
+
+    Book(String name, String isbn, int qty, int price) {
+        this.name = name;
+        this.isbn = isbn;
+        this.qty = qty;
+        this.price = price;
+    }
+}
+
+class Borrower {
+    String email;
+    String password;
+    int deposit = 1500;
+
+    ArrayList<Book> borrowed = new ArrayList<>();
+    ArrayList<String> fines = new ArrayList<>();
+
+    Borrower(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+}
+
+public class LibrarySystem {
+
+    static Scanner sc = new Scanner(System.in);
+
+    static ArrayList<Book> books = new ArrayList<>();
+    static ArrayList<Borrower> users = new ArrayList<>();
+
+    static String adminEmail = "admin";
+    static String adminPass = "123";
+
+    public static void main(String[] args) {
+
+        while (true) {
+            System.out.println("\n1.Login  2.Exit");
+            int ch = sc.nextInt();
+
+            if (ch == 1) login();
+            else break;
+        }
+    }
+
+    // LOGIN
+    static void login() {
+        System.out.print("Email: ");
+        String email = sc.next();
+
+        System.out.print("Password: ");
+        String pass = sc.next();
+
+        if (email.equals(adminEmail) && pass.equals(adminPass)) {
+            adminMenu();
+        } else {
+            for (Borrower b : users) {
+                if (b.email.equals(email) && b.password.equals(pass)) {
+                    borrowerMenu(b);
+                    return;
+                }
+            }
+            System.out.println("Invalid login");
+        }
+    }
+
+    // ADMIN MENU
+    static void adminMenu() {
+        while (true) {
+            System.out.println("\n---Admin Menu---");
+            System.out.println("1.Add Book");
+            System.out.println("2.View Books");
+            System.out.println("3.Delete Book");
+            System.out.println("4.Add Borrower");
+            System.out.println("5.Reports");
+            System.out.println("6.Logout");
+
+            int ch = sc.nextInt();
+
+            if (ch == 1) addBook();
+            else if (ch == 2) viewBooks();
+            else if (ch == 3) deleteBook();
+            else if (ch == 4) addUser();
+            else if (ch == 5) reports();
+            else break;
+        }
+    }
+
+    static void addBook() {
+
+    sc.nextLine(); // clear buffer once
+
+    System.out.print("Name: ");
+    String n = sc.nextLine();
+
+    System.out.print("ISBN: ");
+    String i = sc.nextLine();
+
+    System.out.print("Qty: ");
+    int q = Integer.parseInt(sc.nextLine());
+
+    System.out.print("Price: ");
+    int p = Integer.parseInt(sc.nextLine());
+
+    books.add(new Book(n, i, q, p));
+    System.out.println("Book added");
+}
+
+    static void viewBooks() {
+        for (Book b : books) {
+            System.out.println(b.name + " | " + b.isbn + " | Qty: " + b.qty);
+        }
+    }
+
+    static void deleteBook() {
+        System.out.print("Enter ISBN: ");
+        String i = sc.next();
+
+        for (int j = 0; j < books.size(); j++) {
+            if (books.get(j).isbn.equals(i)) {
+                books.remove(j);
+                System.out.println("Deleted");
+                return;
+            }
+        }
+        System.out.println("Not found");
+    }
+
+    static void addUser() {
+        System.out.print("Email: ");
+        String e = sc.next();
+
+        System.out.print("Password: ");
+        String p = sc.next();
+
+        users.add(new Borrower(e, p));
+        System.out.println("Borrower added");
+    }
+
+    // BORROWER MENU
+    static void borrowerMenu(Borrower b) {
+        while (true) {
+            System.out.println("\n---Borrower Menu---");
+            System.out.println("1.View Books");
+            System.out.println("2.Borrow Book");
+            System.out.println("3.Return Book");
+            System.out.println("4.Fine History");
+            System.out.println("5.Logout");
+
+            int ch = sc.nextInt();
+
+            if (ch == 1) viewBooks();
+            else if (ch == 2) borrowBook(b);
+            else if (ch == 3) returnBook(b);
+            else if (ch == 4) showFine(b);
+            else break;
+        }
+    }
+
+    static void borrowBook(Borrower b) {
+
+        if (b.borrowed.size() >= 3) {
+            System.out.println("Max 3 books only");
+            return;
+        }
+
+        System.out.print("Enter ISBN: ");
+        String i = sc.next();
+
+        for (Book bk : books) {
+            if (bk.isbn.equals(i) && bk.qty > 0) {
+
+                if (b.borrowed.contains(bk)) {
+                    System.out.println("Already borrowed");
+                    return;
+                }
+
+                bk.qty--;
+                b.borrowed.add(bk);
+
+                System.out.println("Book borrowed");
+                return;
+            }
+        }
+
+        System.out.println("Book not available");
+    }
+
+    static void returnBook(Borrower b) {
+
+        System.out.print("Enter ISBN: ");
+        String i = sc.next();
+
+        for (int j = 0; j < b.borrowed.size(); j++) {
+            Book bk = b.borrowed.get(j);
+
+            if (bk.isbn.equals(i)) {
+
+                int fine = 10;
+
+                b.deposit -= fine;
+                b.fines.add("Returned late fine: " + fine);
+
+                bk.qty++;
+                b.borrowed.remove(j);
+
+                System.out.println("Returned. Fine: " + fine);
+                return;
+            }
+        }
+
+        System.out.println("Book not found");
+    }
+
+    static void showFine(Borrower b) {
+        for (String s : b.fines) {
+            System.out.println(s);
+        }
+    }
+
+    // REPORTS
+    static void reports() {
+
+        System.out.println("\nLow stock books:");
+        for (Book b : books) {
+            if (b.qty < 2) {
+                System.out.println(b.name);
+            }
+        }
+
+        System.out.println("\nBooks never borrowed:");
+        for (Book b : books) {
+            if (b.qty > 0) {
+                System.out.println(b.name);
+            }
+        }
+    }
+}
